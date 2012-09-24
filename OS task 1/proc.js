@@ -11,15 +11,25 @@ var ip = new INSTRUCTION_POINTER();
 function RANDOM_ACCESS_MEMORY(init) {
 	this.content = new Array(256);
 	this.content = init;
-	this.getContent = function(index) {
-		return(this.content[index]);
-	}
-	this.readCommand = function(index) {
-		return((this.content[index]) + "" + (this.content[index + 1]));
+	for (var i = 0; i < 256; i++) {
+		if (this.content[i] == null) {
+			this.content[i] = 0;
+		} else {
+			this.content[i] = (this.content[i].toString()).charCodeAt(0);
+			if (this.content[i] > 0xFF) {
+				this.content[i] -= 0x350;
+			}
+		}
+		this.getContent = function(index) {
+			return(this.content[index]);
+		}
+		this.readCommand = function(index) {
+			return(new Array((this.content[index]),(this.content[index + 1])));
+		}
 	}
 }
 var fso = new ActiveXObject("Scripting.FileSystemObject");
-var file_name = "memory.txt";
+var file_name = "memory.hex";
 var file = fso.OpenTextFile(file_name, 1, true);
 var memory = new RANDOM_ACCESS_MEMORY(file.ReadAll().split(""));
 file.Close();
@@ -27,8 +37,8 @@ file.Close();
 //REGCOM - хранит команду целиком. Возвращает отдельно код операции и адресную часть команды
 function REGCOM() {
 	this.setCommand = function(command) {
-		this.operation_code = command.substr(0,1);
-		this.address = command.substr(1,1);
+		this.operation_code = command[0];
+		this.address = command[1];
 	}
 	this.getOpCode = function() {
 		return this.operation_code;
@@ -40,7 +50,7 @@ function REGCOM() {
 var regcom = new REGCOM();
 
 //ADDER - устройство целочисленного сложения.
-function adder() {
+function ADDER() {
 	this.setFirst = function(operand) {
 		this.first = operand;
 	}
@@ -51,15 +61,20 @@ function adder() {
 		return (this.first + this.second);
 	}
 }
+var adder = new ADDER();
 
+//DECCOM
+function DECCOM() {
+	this.setParam = function(opCode) {
+		WSH.Echo(opCode);
+	}
+}
+var deccom = new DECCOM();
 
 
 //Начало цикла ЭВМ
 regcom.setCommand(memory.readCommand(ip.getValue()));
+deccom.setParam(regcom.getOpCode());
 
 
 
-
-
-
-WSH.echo(regcom.getOpCode());
