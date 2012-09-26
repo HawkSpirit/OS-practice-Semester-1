@@ -252,7 +252,8 @@ function ARIFMETIC_LOGIC_UNIT() {
 					break;
 			default: break;
 		}
-		prznk = !(result == 0) + "" + (result > 0);
+		prznk = Number(!(result == 0)) + "" + Number((result > 0));
+		
 	}
 	this.getResult = function() {
 		return result;
@@ -271,12 +272,12 @@ while (env.PYSK) {
 	adder.setOperands(ir.getValue(), regcom.getAddress());
 	adderNextInstruction.setOperands(ip.getValue(), 2);
 	ip.setValue(mul1.proceed(Number(env.PEREH), new Array(adderNextInstruction.getResult(), adder.getResult())));
-	alu.proceed(env.OP, gpr.getCommon(),mul2.proceed(env.VIB, new Array(memory.getContent(adder.getResult()), adder.getResult(), 0)));
+	alu.proceed(env.OP, gpr.getCommon(),mul2.proceed(Number(env.VIB), new Array(memory.getContent(adder.getResult()), adder.getResult(), 0)));
 	if (env.ZAPP) {
 		memory.setContent(adder.getResult(), alu.getResult());
 	}
 	if (env.ZAM2) {
-		ir.setValue(mul3.proceed(env.CHIST, new Array(alu.getResult(), 0)));
+		ir.setValue(mul3.proceed(Number(env.CHIST), new Array(alu.getResult(), 0)));
 	}
 	if (env.ZAM1) {
 		gpr.setValue(alu.getResult(), alu.getPrznk());
@@ -284,6 +285,6 @@ while (env.PYSK) {
 	if (env.VZAP1) {
 		ior.setValue(alu.getResult(), 1);
 	}
-	WSH.Echo(regcom.getOpCode());
+	WSH.Echo(ip.getValue(), regcom.getOpCode(), regcom.getAddress(), ' \n ',);
 }
 
