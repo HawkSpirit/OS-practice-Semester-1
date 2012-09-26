@@ -285,6 +285,6 @@ while (env.PYSK) {
 	if (env.VZAP1) {
 		ior.setValue(alu.getResult(), 1);
 	}
-	WSH.Echo(ip.getValue(), regcom.getOpCode(), regcom.getAddress(), ' \n ',);
+	WSH.Echo(ip.getValue(), regcom.getOpCode(), regcom.getAddress(), ' \n ');
 }
 
