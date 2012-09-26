@@ -70,6 +70,7 @@ function ADDER() {
 	}
 }
 var adder = new ADDER();
+var adderNextInstruction = new ADDER();
 
 //УПРАВЛЯЮЩИЕ СИГНАЛЫ - реализованны в виде абстрактного объекта, сочетающие набор переменных окружения
 function ENV() {	
@@ -185,7 +186,9 @@ function MULTIPLEXOR() {
 		return arrayOfSignals[control_signal];
 	}
 }
-var multiplexor = new MULTIPLEXOR();
+var mul1 = new MULTIPLEXOR();	//НИЖНИЙ
+var mul2 = new MULTIPLEXOR();	//СРЕДНИЙ
+var mul3 = new MULTIPLEXOR();	//ВЕРХНИЙ
 
 //INDEX REGISTER
 function INDEX_REGISTER() {
@@ -197,7 +200,7 @@ function INDEX_REGISTER() {
 		value = val;
 	}
 }
-var IR = new INDEX_REGISTER();
+var ir = new INDEX_REGISTER();
 
 //GENERAL_PURPOSE_REGISTER
 function GENERAL_PURPOSE_REGISTER() {
@@ -240,19 +243,16 @@ function ARIFMETIC_LOGIC_UNIT() {
 	this.proceed = function(control_signal, GPRcontent, EA) {
 		switch (control_signal) {
 			case 0:	result = GPRcontent;
-					prznk = !(result == 0) + "" + (result > 0);
 					break;
 			case 1:	result = EA;
-					prznk = !(result == 0) + "" + (result > 0);
 					break;
 			case 2:	result = GPRcontent + EA;
-					prznk = !(result == 0) + "" + (result > 0);
 					break;
 			case 3:	result = GPRcontent - EA;
-					prznk = !(result == 0) + "" + (result > 0);
 					break;
 			default: break;
 		}
+		prznk = !(result == 0) + "" + (result > 0);
 	}
 	this.getResult = function() {
 		return result;
@@ -265,10 +265,25 @@ var alu = new ARIFMETIC_LOGIC_UNIT();
 
 
 //Начало цикла ЭВМ
-regcom.setCommand(memory.readCommand(ip.getValue()));
-//deccom.setParam(regcom.getOpCode(),env);
-
-var a = new INDEX_REGISTER(84);
-var b = new INDEX_REGISTER(6);
-
+while (env.PYSK) {
+	regcom.setCommand(memory.readCommand(ip.getValue()));
+	deccom.setParam(regcom.getOpCode(), gpr.getPrznk(), ior.getFlag());
+	adder.setOperands(ir.getValue(), regcom.getAddress());
+	adderNextInstruction.setOperands(ip.getValue(), 2);
+	ip.setValue(mul1.proceed(Number(env.PEREH), new Array(adderNextInstruction.getResult(), adder.getResult())));
+	alu.proceed(env.OP, gpr.getCommon(),mul2.proceed(env.VIB, new Array(memory.getContent(adder.getResult()), adder.getResult(), 0)));
+	if (env.ZAPP) {
+		memory.setContent(adder.getResult(), alu.getResult());
+	}
+	if (env.ZAM2) {
+		ir.setValue(mul3.proceed(env.CHIST, new Array(alu.getResult(), 0)));
+	}
+	if (env.ZAM1) {
+		gpr.setValue(alu.getResult(), alu.getPrznk());
+	}
+	if (env.VZAP1) {
+		ior.setValue(alu.getResult(), 1);
+	}
+	WSH.Echo(regcom.getOpCode());
+}
 
