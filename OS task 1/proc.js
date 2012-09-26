@@ -1,31 +1,37 @@
 //INSTRUCTION POINTER - указатель команды. Хранит адрес текущей команды. Изначально равен 0. Предоставляет доступ к адресу текущей команды
 function INSTRUCTION_POINTER() {
-	this.value = 0;
+	var value = 0;
 	this.getValue = function() {
-		return(this.value);
+		return(value);
+	}
+	this.setValue = function(val) {
+		value = val;
 	}
 }
 var ip = new INSTRUCTION_POINTER();
 
 //RANDOM ACCESS MEMORY - оперативная память. 256 ячеек по 8 бита каждая. Изнициализирована содержимым файла "memory.txt". Предоставляет доступ к указанной ячейке памяти
 function RANDOM_ACCESS_MEMORY(init) {
-	this.content = new Array(256);
-	this.content = init;
+	var content = new Array(256);
+	content = init;
 	for (var i = 0; i < 256; i++) {
-		if (this.content[i] == null) {
-			this.content[i] = 0;
+		if (content[i] == null) {
+			content[i] = 0;
 		} else {
-			this.content[i] = (this.content[i].toString()).charCodeAt(0);
-			if (this.content[i] > 0xFF) {
-				this.content[i] -= 0x350;
+			content[i] = (content[i].toString()).charCodeAt(0);
+			if (content[i] > 0xFF) {
+				content[i] -= 0x350;
 			}
 		}
-		this.getContent = function(index) {
-			return(this.content[index]);
-		}
-		this.readCommand = function(index) {
-			return(new Array((this.content[index]),(this.content[index + 1])));
-		}
+	}
+	this.getContent = function(index) {
+		return(content[index]);
+	}
+	this.setContent = function(index, value) {
+		content[index] = value;
+	}
+	this.readCommand = function(index) {
+		return(new Array((content[index]),(ontent[index + 1])));
 	}
 }
 var fso = new ActiveXObject("Scripting.FileSystemObject");
@@ -36,40 +42,31 @@ file.Close();
 
 //REGCOM - хранит команду целиком. Возвращает отдельно код операции и адресную часть команды
 function REGCOM() {
-	this.operation_code = 0;
-	this.address = 0;
+	var operation_code = 0;
+	var address = 0;
 	this.setCommand = function(command) {
-		this.operation_code = command[0];
-		this.address = command[1];
+		operation_code = command[0];
+		address = command[1];
 	}
 	this.getOpCode = function() {
-		return this.operation_code;
+		return operation_code;
 	}
 	this.getAddress = function() {
-		return this.address;
+		return address;
 	}	
 }
 var regcom = new REGCOM();
 
 //ADDER - устройство целочисленного сложения.
 function ADDER() {
-	this.first = 0;
-	this.second = 0;
-	this.setFirst = function(operand) {
-		this.first = operand;
-	}
-	this.setSecond = function(operand) {
-		this.second = operand;
-	}
-	this.getResult = function() {
-		return (this.first + this.second);
+	this.add = function(op1, op2) {
+		return (op1 + op2);
 	}
 }
 var adder = new ADDER();
 
 //УПРАВЛЯЮЩИЕ СИГНАЛЫ - реализованны в виде абстрактного объекта, сочетающие набор переменных окружения
 function ENV() {
-
 	this.KOP = 0;	//выпилить
 	this.PR = 0x00;
 	this.F = false;
@@ -88,6 +85,7 @@ function ENV() {
 	this.ZAPP = false;
 	this.PEREH = false;
 }
+var env = new ENV();
 
 //DECCOM - подает сигналы на соответствующие устройства через ENV - переменные окружения
 function DECCOM() {
@@ -146,10 +144,68 @@ function DECCOM() {
 }
 var deccom = new DECCOM();
 
+//MULTIPLEXOR - На входе управляющий сигнал и массив сигналов, на выходе сигнал, соответствующий значению
+function MULTIPLEXOR() {
+	this.proceed = function(control_signal,arrayOfSignals) {
+		return arrayOfSignals[control_signal];
+	}
+}
+var multiplexor = new MULTIPLEXOR();
+
+//INDEX REGISTER
+function INDEX_REGISTER() {
+	var value = 0;
+	this.getValue = function() {
+		return value;
+	}
+	this.setValue = function(val) {
+		value = val;
+	}
+}
+var IR = new INDEX_REGISTER();
+
+//GENERAL_PURPOSE_REGISTER
+function GENERAL_PURPOSE_REGISTER() {
+	var commonVal = 0;
+	var prznkVal = 0b00;
+	this.setValue = function(common, prznk) {
+		commonVal = common;
+		prznkVal = prznk;
+	}
+	this.getCommon = function() {
+		return commonVal;
+	}
+	this.getPrznk = function() {
+		return prznkVal;
+	}
+}
+var gpr = new GENERAL_PURPOSE_REGISTER();
+
+//INPUT_OUTPUT_REGISTER
+function INPUT_OUTPUT_REGISTER(){
+	var value = 0;
+	var flag = 0;
+	this.setValue = function(val, f) {
+		value = common;
+		flag = f;
+	}
+	this.getValue = function() {
+		return value;
+	}
+	this.getFlag = function() {
+		return flag;
+	}
+}
+var ior = new INPUT_OUTPUT_REGISTER();
+
 
 //Начало цикла ЭВМ
 regcom.setCommand(memory.readCommand(ip.getValue()));
-deccom.setParam(regcom.getOpCode());
+deccom.setParam(regcom.getOpCode(),env);
 
+var a = new INDEX_REGISTER(84);
+var b = new INDEX_REGISTER(6);
+b.set(1);
+WSH.Echo(b.show());
 
 
