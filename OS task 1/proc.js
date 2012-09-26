@@ -31,7 +31,7 @@ function RANDOM_ACCESS_MEMORY(init) {
 		content[index] = value;
 	}
 	this.readCommand = function(index) {
-		return(new Array((content[index]),(ontent[index + 1])));
+		return(new Array((content[index]),(content[index + 1])));
 	}
 }
 var fso = new ActiveXObject("Scripting.FileSystemObject");
@@ -66,11 +66,7 @@ function ADDER() {
 var adder = new ADDER();
 
 //УПРАВЛЯЮЩИЕ СИГНАЛЫ - реализованны в виде абстрактного объекта, сочетающие набор переменных окружения
-function ENV() {
-	this.KOP = 0;	//выпилить
-	this.PR = 0x00;
-	this.F = false;
-	
+function ENV() {	
 	this.I = 0;
 	this.P = 0;
 	this.OP = 0;	
@@ -89,7 +85,7 @@ var env = new ENV();
 
 //DECCOM - подает сигналы на соответствующие устройства через ENV - переменные окружения
 function DECCOM() {
-	this.setParam = function(opCode, env) {
+	this.setParam = function(opCode, prznk, flag, env) {
 		switch (opCode) {
 			case 0x00:	env.P = 0;			//ЗАПИСЬ
 						env.OP = 0;
@@ -128,10 +124,42 @@ function DECCOM() {
 						env.OP = 0xF;
 						env.PEREH = true;
 						break;
-			case 0xFF:	env.P =4;			//ОСТАНОВ
+			case 0xFF:	env.P = 4;			//ОСТАНОВ
 						env.OP = 0xF;
 						env.PEREH = false;
 						break;
+			case 0xF0:	env.P = 4;			//ПЕРЕХОД ПРИ = 0
+						env.OP = 0xF;
+						if (prznk.charAt(0) == 0) {
+							env.PEREH = true;
+						} else {
+							env.PEREH = false;
+						}
+						break;
+			case 0xF1:	env.P = 4;			//ПЕРЕХОД ПРИ > 0
+						env.OP = 0xF;
+						if (prznk.charAt(1) == 0) {
+							env.PEREH = false;
+						} else {
+							env.PEREH = true;
+						}
+						break;
+			case 0xF4:	env.P = 4;			//ПЕРЕХОД ПРИ FLAG = 0
+						env.OP = 0xF;
+						if (flag == false) {
+							env.PEREH = true;
+						} else {
+							env.PEREH = false;
+						}
+						break;
+			case 0xF5:	env.P = 4;			//ПЕРЕХОД ПРИ FLAG = 1
+						env.OP = 0xF;
+						if (flag == false) {
+							env.PEREH = false;
+						} else {
+							env.PEREH = true;
+						}
+						break;						
 		}
 		env.ZAPP = (env.P == 0);
 		env.ZAM1 = (env.P == 1);
@@ -167,7 +195,7 @@ var IR = new INDEX_REGISTER();
 //GENERAL_PURPOSE_REGISTER
 function GENERAL_PURPOSE_REGISTER() {
 	var commonVal = 0;
-	var prznkVal = 0b00;
+	var prznkVal = '00';
 	this.setValue = function(common, prznk) {
 		commonVal = common;
 		prznkVal = prznk;
@@ -184,7 +212,7 @@ var gpr = new GENERAL_PURPOSE_REGISTER();
 //INPUT_OUTPUT_REGISTER
 function INPUT_OUTPUT_REGISTER(){
 	var value = 0;
-	var flag = 0;
+	var flag = false;
 	this.setValue = function(val, f) {
 		value = common;
 		flag = f;
@@ -198,14 +226,16 @@ function INPUT_OUTPUT_REGISTER(){
 }
 var ior = new INPUT_OUTPUT_REGISTER();
 
+//ARIFMETIC_LOGIC_UNIT
+function ARIFMETIC_LOGIC_UNIT() {
+}
+
 
 //Начало цикла ЭВМ
 regcom.setCommand(memory.readCommand(ip.getValue()));
-deccom.setParam(regcom.getOpCode(),env);
+//deccom.setParam(regcom.getOpCode(),env);
 
 var a = new INDEX_REGISTER(84);
 var b = new INDEX_REGISTER(6);
-b.set(1);
-WSH.Echo(b.show());
 
 
