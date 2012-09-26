@@ -59,8 +59,14 @@ var regcom = new REGCOM();
 
 //ADDER - устройство целочисленного сложения.
 function ADDER() {
-	this.add = function(op1, op2) {
-		return (op1 + op2);
+	var first = 0;
+	var second = 0;
+	this.setOperands = function(a, b) {
+		first = a;
+		second = b;
+	}
+	this.getResult = function() {
+		return (first + second);
 	}
 }
 var adder = new ADDER();
@@ -85,7 +91,7 @@ var env = new ENV();
 
 //DECCOM - подает сигналы на соответствующие устройства через ENV - переменные окружения
 function DECCOM() {
-	this.setParam = function(opCode, prznk, flag, env) {
+	this.setParam = function(opCode, prznk, flag) {
 		switch (opCode) {
 			case 0x00:	env.P = 0;			//ЗАПИСЬ
 						env.OP = 0;
@@ -159,7 +165,8 @@ function DECCOM() {
 						} else {
 							env.PEREH = true;
 						}
-						break;						
+						break;
+			default:	break;
 		}
 		env.ZAPP = (env.P == 0);
 		env.ZAM1 = (env.P == 1);
@@ -228,7 +235,33 @@ var ior = new INPUT_OUTPUT_REGISTER();
 
 //ARIFMETIC_LOGIC_UNIT
 function ARIFMETIC_LOGIC_UNIT() {
+	var result = 0;
+	var prznk = '00';
+	this.proceed = function(control_signal, GPRcontent, EA) {
+		switch (control_signal) {
+			case 0:	result = GPRcontent;
+					prznk = !(result == 0) + "" + (result > 0);
+					break;
+			case 1:	result = EA;
+					prznk = !(result == 0) + "" + (result > 0);
+					break;
+			case 2:	result = GPRcontent + EA;
+					prznk = !(result == 0) + "" + (result > 0);
+					break;
+			case 3:	result = GPRcontent - EA;
+					prznk = !(result == 0) + "" + (result > 0);
+					break;
+			default: break;
+		}
+	}
+	this.getResult = function() {
+		return result;
+	}
+	this.getPrznk = function() {
+		return prznk;
+	}
 }
+var alu = new ARIFMETIC_LOGIC_UNIT();
 
 
 //Начало цикла ЭВМ
