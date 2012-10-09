@@ -1,3 +1,10 @@
+var ERROR_CODE = 0; //Код ошибки 	0 - ВСЕ ХОРОШО
+					//				1 - ФАЙЛ НЕ НАЙДЕН
+					//				2 - ОШИБКА ЧТЕНИЯ
+					//				3 - ОШИБКА ДОБАВЛЕНИЯ ЭЛЕМЕНТА В БУФЕР
+					//				4 - ОШИБКА СОРТИРОВКИ
+					//				5 - ОШИБКА ЗАПИСИ В ФАЙЛ
+
 function sIncrease(i, ii) { //Функция сортировки по возрастанию возрастанию
     if (i > ii)
         return 1;
@@ -11,32 +18,60 @@ var fso = new ActiveXObject("Scripting.FileSystemObject");
 
 var buffer = new Array(); //Сюда чтаем содержимое всех файлов, деля по пробелу, и откидывая то, что нельзя считать числом
 
+var fileObject = new Object(); //Ссылка на текущий файл в обработке
+
+//ЭТАП ЧТЕНИЯ ФАЙЛОВ
 for (var i = 0; i < WScript.Arguments.length - 1; ++i) {
-	var fileObject = fso.OpenTextFile(WScript.Arguments(i), 1, false);
-	var fileContent = fileObject.ReadAll().split(" ");
-	for (var j = 0; j < fileContent.length; ++j) {
-		if (!(isNaN(parseInt(fileContent[j])))) {
-			buffer.push(parseInt(fileContent[j]));
-		}
+	try {
+		fileObject = fso.OpenTextFile(WScript.Arguments(i), 1, false);
+	} catch(e) {
+		ERROR_CODE = 1;
+		WSH.Echo("Ошибка открытия файла \"" + WScript.Arguments(i) + "\"\n" + e.name + " ERROR_CODE: " + ERROR_CODE);
 	}
-	fileObject.Close();
+	if (ERROR_CODE != 1) {
+		try {
+			var fileContent = fileObject.ReadAll().split(/\s/g);
+		} catch(e) {			
+			ERROR_CODE = 2;
+			WSH.Echo("Ошибка чтения файла \"" + WScript.Arguments(i) + "\"\n" + e.name + " ERROR_CODE: " + ERROR_CODE);
+		} finally {
+			fileObject.Close();
+		}
+		if (ERROR_CODE != 2) {		
+			for (var j = 0; j < fileContent.length; ++j) {
+				if (!(isNaN(parseInt(fileContent[j])))) {
+					try {
+						buffer.push(parseInt(fileContent[j]));
+					} catch(e) {	
+						ERROR_CODE = 3;
+						WSH.Echo("Ошибка добавления элемента в буфер. Добавлено элементов " + buffer.length + "\n" + e.name + " ERROR_CODE: " + ERROR_CODE);						
+					}
+				}
+			}
+		}
+	} else {
+		continue;
+	}
 }
 
-buffer.sort(sIncrease)
+//ЭТАП СОРТИРОВКИ
+try {
+	buffer.sort(sIncrease);
+} catch(e) {
+	ERROR_CODE = 4;
+	WSH.Echo("Ошибка сортировки\n" + e.name + " ERROR_CODE: " + ERROR_CODE);	
+}
 
-var resultFile = fso.OpenTextFile(WScript.Arguments(WScript.Arguments.length - 1), 2, true);
-resultFile.Write(buffer.join(" "));
-
-
-
-
-
-
-
-
-
-
-
+//ЭТАП ЗАПИСИ
+try {
+	fileObject = fso.OpenTextFile(WScript.Arguments(WScript.Arguments.length - 1), 2, true);
+	fileObject.Write(buffer.join(" "));
+} catch(e) {
+	ERROR_CODE = 5;
+	WSH.Echo("Ошибка записи в файл\n" + e.name + " ERROR_CODE: " + ERROR_CODE);		
+} finally {
+	fileObject.Close();
+}
 
 
 
