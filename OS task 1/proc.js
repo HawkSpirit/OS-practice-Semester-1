@@ -264,25 +264,51 @@ function ARIFMETIC_LOGIC_UNIT() {
 }
 var alu = new ARIFMETIC_LOGIC_UNIT();
 
+//WIRES CONDITION | 0 - bad | 1 - good
+var wires_condition = new Array();
+wires_condition[0] = true; //REGCOM INPUT WIRE
+wires_condition[1] = true; //DECCOM INPUT WIRE
+wires_condition[2] = true; //ADDER INPUT WIRE
+wires_condition[3] = true; //ADDER FOR INSTRUCTION POINTER INPUT WIRE
+wires_condition[4] = true; //INSTRUCTION POINTER INPUT WIRE
+wires_condition[5] = true; //ALU INPUT WIRE
+
+wires_condition[6] = true; //ZAPP CONDITION
+wires_condition[7] = true; //ZAM2 CONDITION
+wires_condition[8] = true; //ZAM1 CONDITION
+wires_condition[9] = true; //VZAP1 CONDITION
+
 
 //Начало цикла ЭВМ
 while (env.PYSK) {
-	regcom.setCommand(memory.readCommand(ip.getValue()));
-	deccom.setParam(regcom.getOpCode(), gpr.getPrznk(), ior.getFlag());
-	adder.setOperands(ir.getValue(), regcom.getAddress());
-	adderNextInstruction.setOperands(ip.getValue(), 2);
-	ip.setValue(mul1.proceed(Number(env.PEREH), new Array(adderNextInstruction.getResult(), adder.getResult())));
-	alu.proceed(env.OP, gpr.getCommon(),mul2.proceed(Number(env.VIB), new Array(memory.getContent(adder.getResult()), adder.getResult(), 0)));
-	if (env.ZAPP) {
+	if (wires_condition[0]) {
+		regcom.setCommand(memory.readCommand(ip.getValue()));
+	}
+	if (wires_condition[1] {
+		deccom.setParam(regcom.getOpCode(), gpr.getPrznk(), ior.getFlag());
+	}
+	if (wires_condition[2] {
+		adder.setOperands(ir.getValue(), regcom.getAddress());
+	}
+	if (wires_condition[3] {
+		adderNextInstruction.setOperands(ip.getValue(), 2);
+	}
+	if (wires_condition[4] {
+		ip.setValue(mul1.proceed(Number(env.PEREH), new Array(adderNextInstruction.getResult(), adder.getResult())));
+	}
+	if (wires_condition[5] {
+		alu.proceed(env.OP, gpr.getCommon(),mul2.proceed(Number(env.VIB), new Array(memory.getContent(adder.getResult()), adder.getResult(), 0)));
+	}
+	if (env.ZAPP && wires_condition[6]) {
 		memory.setContent(adder.getResult(), alu.getResult());
 	}
-	if (env.ZAM2) {
+	if (env.ZAM2 && wires_condition[7]) {
 		ir.setValue(mul3.proceed(Number(env.CHIST), new Array(alu.getResult(), 0)));
 	}
-	if (env.ZAM1) {
+	if (env.ZAM1 && wires_condition[8]) {
 		gpr.setValue(alu.getResult(), alu.getPrznk());
 	}
-	if (env.VZAP1) {
+	if (env.VZAP1 && wires_condition[9]) {
 		ior.setValue(alu.getResult(), 1);
 	}
 	WSH.Echo(ip.getValue(), regcom.getOpCode(), regcom.getAddress(), ir.getValue());
