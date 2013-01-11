@@ -29,7 +29,7 @@ int main() {
 	
 	//Creation MAX_THREADS amount of non-synchronized threads with error handling
 	counterSimple = 0; //set initial value of counter to 0
-    for(int i=0; i < MAX_THREADS; ++i) {
+	for(int i=0; i < MAX_THREADS; ++i) {
         int error = pthread_create(&threads_array[i], NULL, IncSimle, NULL);
 		if (error) {
 			cout << "Error: could not create a thread" << endl;
@@ -48,7 +48,7 @@ int main() {
 	
 	//Creation MAX_THREADS amount of synchronized threads with error handling
 	counterProtected = 0; //set initial value of counter to 0
-    for(int i=0; i < MAX_THREADS; ++i) {
+	for(int i=0; i < MAX_THREADS; ++i) {
         int error = pthread_create(&threads_array[i], NULL, IncProtected, NULL);
 		if (error) {
 			cout << "Error: could not create a thread" << endl;
