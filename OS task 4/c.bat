@@ -1,1 +1,1 @@
-g++ 1.cpp -o 1.exe
+g++ 2.cpp -o 2.exe -lpthread
