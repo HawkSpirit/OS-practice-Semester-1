@@ -1,1 +1,1 @@
-wscript sort.js 1.txt 2.txt res.txt
+wscript sort.js 1.txt 2.txt 3.txt res.txt
