@@ -79,7 +79,7 @@ void *IncSimle(void *arg) {
 	while (i < 10000) {
 	
 		//Critical section
-        counterSimple += 1;
+		counterSimple += 1;
 		++i;
 	}
 }
