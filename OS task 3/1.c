@@ -1,5 +1,6 @@
 #include <efi.h>
 #include <efilib.h>
+#include <unistd.h>
 
 EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 
@@ -54,7 +55,7 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 	}
 
 	//Printing result
-	result *= 4096;
+	result *= getpagesize();
 	Print(L"RESULT %d bytes AVALIABLE\n", result);
 	
 	return EFI_SUCCESS;
