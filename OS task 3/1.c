@@ -1,6 +1,5 @@
 #include <efi.h>
 #include <efilib.h>
-#include <unistd.h>
 
 EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 
@@ -25,7 +24,7 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 	}
 
 	//Memory allocation
-	status = uefi_call_wrapper(efi_bs -> AllocatePool, 3, pool_type,mem_map_size, ((void*)&mem_map));
+	status = uefi_call_wrapper(efi_bs -> AllocatePool, 3, pool_type, mem_map_size, ((void*)&mem_map));
 	if (status != EFI_SUCCESS) {
 		Print(L"AllocatePool ERROR\n");
 		return EFI_SUCCESS;
@@ -40,8 +39,10 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 
 	//Calculating result
 	long long int result = 0;	
+	long long int total_NumberOfPages = 0;	
 	int temp = mem_map_size / (sizeof(EFI_MEMORY_DESCRIPTOR));	
 	for (int i = 0; i < temp; i++){
+		total_NumberOfPages += mem_map[i].NumberOfPages;
 		if((mem_map[i].Type == EfiBootServicesCode) || (mem_map[i].Type == EfiBootServicesData) || (mem_map[i].Type == EfiConventionalMemory)) {
 			result += mem_map[i].NumberOfPages;
 		}
@@ -53,9 +54,12 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 		Print(L"FreePool ERROR\n");
 		return status;
 	}
+	
+	//Calculating page size
+	int pagesize = mem_map_size / total_NumberOfPages;
 
 	//Printing result
-	result *= getpagesize();
+	result *= pagesize;
 	Print(L"RESULT %d bytes AVALIABLE\n", result);
 	
 	return EFI_SUCCESS;
