@@ -39,10 +39,9 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 
 	//Calculating result
 	long long int result = 0;	
-	long long int total_NumberOfPages = 0;	
-	int temp = mem_map_size / (sizeof(EFI_MEMORY_DESCRIPTOR));	
-	for (int i = 0; i < temp; i++){
-		total_NumberOfPages += mem_map[i].NumberOfPages;
+	int temp = mem_map_size / descr_size);
+	int i;
+	for (i = 0; i < temp; i++){
 		if((mem_map[i].Type == EfiBootServicesCode) || (mem_map[i].Type == EfiBootServicesData) || (mem_map[i].Type == EfiConventionalMemory)) {
 			result += mem_map[i].NumberOfPages;
 		}
@@ -54,12 +53,11 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 		Print(L"FreePool ERROR\n");
 		return status;
 	}
-	
-	//Calculating page size
-	int pagesize = mem_map_size / total_NumberOfPages;
 
 	//Printing result
-	result *= pagesize;
+	result *= EFI_PAGE_SIZE;
+	/*	As said in http://www.uefi.org/specs/download/UEFI_2_3_1_Errata_C_final
+		UEFI page size is always set to 0x1000 = 4096, and it is defined as EFI_PAGE_SIZE constant	*/
 	Print(L"RESULT %d bytes AVALIABLE\n", result);
 	
 	return EFI_SUCCESS;
